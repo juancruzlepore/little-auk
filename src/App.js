@@ -62,7 +62,6 @@ function Workout(props) {
       </div>
     </div>
   )
-
 }
 
 
