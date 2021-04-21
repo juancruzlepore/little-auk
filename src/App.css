@@ -1,38 +1,38 @@
-.App {
-  text-align: center;
+.workout-elem-base {
+  height: 60px;
+  width: 400px;
+  border-radius: 11px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.workout-elem-container {
+  position: relative;
+  margin: 5px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.workout-elem {
+  background-color: rgb(57, 119, 160);
+  position: absolute;
+  /* clip-path: padding-box; */
+  /* padding-right: -50px; */
+  z-index: 3;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.workout-text {
+  background-color: rgba(57, 119, 160, 0);
+  position: absolute;
+  z-index: 5;
 }
 
-.App-link {
-  color: #61dafb;
+.workout-elem-background {
+  background-color: rgb(134, 180, 211);
+  position: absolute;
+  z-index: 1;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.page-title {
+  font-size:xx-large;
+}
+
+.workout-list {
+  position: relative;
 }
