@@ -16,15 +16,18 @@ class Routine extends Component {
 
   render() {
     return (
-      <div className="">
-        <h1 className="page-title">Routine</h1>
-        <div className="workout-list">
-          {this.state.workouts.map(w => (
-            <div key={w.name} className="workout-elem-container workout-elem-base">
-              <Workout name={w.name} goal={4} />
-            </div>
-          ))}
-
+      <div className="" style={{ width: '100%' }}>
+        <h1 className="page-title text-center">Routine</h1>
+        <div className="flex flex-row">
+          <div className="filler flex-grow"/>
+          <div className="flex-grow-0 workout-list w-screen max-w-xl">
+            {this.state.workouts.map(w => (
+              <div key={w.name} className="workout-elem-container workout-elem-base">
+                <Workout name={w.name} goal={4} />
+              </div>
+            ))}
+          </div>
+          <div className="filler flex-grow"/>
         </div>
       </div>
     );
@@ -40,7 +43,7 @@ function Workout(props) {
   }
 
   return (
-    <div>
+    <div onClick={() => increaseCounter()}>
       <div className='workout-elem-background workout-elem-base flex justify-center inline-block' />
       <Spring native
         from={{ inset: "inset(0 " + Math.round(100 - ((counter - 1) * 100 / props.goal)) + "% 0 0)" }}
@@ -56,7 +59,7 @@ function Workout(props) {
 
       </Spring>
       <div className='workout-text workout-elem-base flex justify-center inline-block'>
-        <p className="inline-block align-bottom mb-auto mt-auto font-semibold" onClick={() => increaseCounter()}>
+        <p className="inline-block align-bottom mb-auto mt-auto font-semibold">
           {props.name}: {counter}/{props.goal}
         </p>
       </div>

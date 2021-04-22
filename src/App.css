@@ -1,6 +1,7 @@
 .workout-elem-base {
   height: 60px;
-  width: 400px;
+  /* max-width: 400px; */
+  width: 100%;
   border-radius: 11px;
 }
 
@@ -12,8 +13,6 @@
 .workout-elem {
   background-color: rgb(57, 119, 160);
   position: absolute;
-  /* clip-path: padding-box; */
-  /* padding-right: -50px; */
   z-index: 3;
 }
 
@@ -35,4 +34,9 @@
 
 .workout-list {
   position: relative;
+  padding-right: 10px;
+}
+
+.filler {
+  /* background-color: blue; */
 }
