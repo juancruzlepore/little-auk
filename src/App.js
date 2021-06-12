@@ -1,6 +1,7 @@
 import './App.css';
 import React, { Component, useState } from 'react';
 import { animated, Spring } from 'react-spring';
+import HTTPService from './services/HTTPSService'
 
 class Routine extends Component {
   constructor(props) {
@@ -12,6 +13,10 @@ class Routine extends Component {
         { name: 'dip' },
       ]
     }
+  }
+
+  componentDidMount() {
+    HTTPService.getRoutines();
   }
 
   render() {
