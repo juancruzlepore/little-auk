@@ -20,6 +20,7 @@
   background-color: rgba(57, 119, 160, 0);
   position: absolute;
   z-index: 5;
+  letter-spacing: 2px;
 }
 
 .workout-elem-background {
@@ -30,13 +31,11 @@
 
 .page-title {
   font-size:xx-large;
+  letter-spacing: 5px;
+  font-weight: 200;
 }
 
 .workout-list {
   position: relative;
   padding-right: 10px;
-}
-
-.filler {
-  /* background-color: blue; */
 }
