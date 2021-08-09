@@ -1,67 +1,178 @@
 import './App.css';
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import { animated, Spring } from 'react-spring';
 import HTTPService from './services/HTTPSService'
-import { Routine as RoutineClass, ScheduleType } from './services/RoutinesService'
+import { Routine as RoutineClass, ScheduleType, WeeklySchedule } from './services/RoutinesService'
+import 'react-circular-progressbar/dist/styles.css';
+import { History } from './History'
+import { DateUtils, WeekDay } from './DateUtils'
 
 const testRoutines = [
-  RoutineClass(
-    1,
-    ScheduleType.WEEKLY,
-    1,
-    {
-      workouts: [
-        { name: 'pull up', goal: 4},
-        { name: 'push up', goal: 4 },
-        { name: 'dip', goal: 4 },
-      ]
-    })
+  {
+    name: "Workout",
+    schedule: {
+      scheduleType: ScheduleType.WEEKLY,
+      dayHints: [WeekDay.MON, WeekDay.WED, WeekDay.FRI]
+    },
+    days: [
+      {
+        name: "Mixed",
+        goal: 3,
+        workouts: [
+          { name: 'pull up', goal: 4 },
+          { name: 'push up', goal: 4 },
+          { name: 'dip', goal: 4 },
+        ]
+      },
+      {
+        name: "Abs",
+        goal: 2,
+        workouts: [
+          { name: 'sit up', goal: 4 },
+          { name: 'legs lift', goal: 4 },
+        ]
+      }
+    ],
+    history: [
+      {
+        day: WeekDay.MON,
+        workoutsName: "Mixed",
+        workouts: [
+          { name: 'pull up', goal: 4, done: 0 },
+          { name: 'push up', goal: 4, done: 1 },
+          { name: 'dip', goal: 4, done: 1 },
+        ],
+      },
+      {
+        day: WeekDay.WED,
+        workoutsName: "Mixed",
+        workouts: [
+          { name: 'pull up', goal: 4, done: 4 },
+          { name: 'push up', goal: 4, done: 4 },
+          { name: 'dip', goal: 4, done: 4 },
+        ],
+      },
+      {
+        day: WeekDay.FRI,
+        workoutsName: "Abs",
+        workouts: [
+          { name: 'sit up', goal: 4, done: 3 },
+          { name: 'legs lift', goal: 4, done: 2 },
+        ],
+      },
+    ]
+  }
 ]
 
-class Routine extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      workouts: [
-        { name: 'pull up' },
-        { name: 'push up' },
-        { name: 'dip' },
-      ]
+
+function App() {
+  return (
+    <div className="flex justify-center">
+      {testRoutines.map(routine =>
+        <Routine key={routine.name} routine={routine} />
+      )}
+
+    </div>
+  );
+}
+
+function Routine({ routine }) {
+
+  const [history, setHistory] = useState(routine.history)
+
+  const selectedRoutineDay = routine.days[0]
+  const curWeekDay = DateUtils.currentWeekDay()
+  const todayProgress = history.filter(d => d.day === curWeekDay)
+
+  const todayProgressForCurrentRoutineDay = todayProgress.find(d => d.workoutsName === selectedRoutineDay.name)?.workouts
+
+  const progress = {}
+
+  for (const e of selectedRoutineDay.workouts) {
+    progress[e.name] = { goal: e.goal, done: 0 }
+  }
+  if (todayProgressForCurrentRoutineDay) {
+    for (const e of todayProgressForCurrentRoutineDay) {
+      progress[e.name] = { goal: e.goal, done: e.done }
     }
   }
 
-  componentDidMount() {
-    HTTPService.getRoutines();
-    console.log("running?")
+
+  const updateHistory = (name, done) => {
+    let curProgress = todayProgressForCurrentRoutineDay
+    const goal = selectedRoutineDay.workouts.find(e => e.name === name).goal
+    const workoutsName = selectedRoutineDay.name
+    const newEntry = { name: name, goal: goal, done: done }
+    if (curProgress) {
+      const index = curProgress.findIndex(e => e.name === name)
+      if (index !== -1) {
+        curProgress[index] = newEntry
+      } else {
+        curProgress.push(newEntry)
+      }
+      const historyIndex = history.findIndex(e => e.workoutsName === workoutsName && e.day === curWeekDay)
+      history[historyIndex].workouts = curProgress
+    } else {
+      history.push({
+        day: curWeekDay,
+        workoutsName: workoutsName,
+        workouts: [newEntry],
+      })
+    }
+    setHistory([...history])
   }
 
-  render() {
-    return (
-      <div className="select-none" style={{ width: '100%' }}>
-        <h1 className="page-title text-center">ROUTINE</h1>
-        <div className="flex flex-row">
-          <div className="filler flex-grow" />
-          <div className="flex-grow-0 workout-list w-screen max-w-xl">
-            {this.state.workouts.map(w => (
-              <div key={w.name} className="workout-elem-container workout-elem-base">
-                <Workout name={w.name} goal={4} />
-              </div>
-            ))}
-          </div>
-          <div className="filler flex-grow" />
-        </div>
-      </div>
-    );
+  return (
+    <div>
+      <RoutineDay progress={progress} updateHistory={updateHistory}></RoutineDay>
+      <History days={
+        Object.values(history).map(d => ({
+          day: d.day,
+          name: d.workoutsName,
+          goal: Object.values(d.workouts).map(w => w.goal).reduce((accu, cur) => accu + cur),
+          done: Object.values(d.workouts).map(w => w.done).reduce((accu, cur) => accu + cur)
+        }))
+      } />
+    </div>
+  )
+}
+
+function RoutineDay({ progress, updateHistory }) {
+
+  const [workouts, setProgress] = useState(progress);
+
+  let updateWorkout = (name, done) => {
+    workouts[name].done = done
+    setProgress({ ...workouts });
+    updateHistory(name, done)
   }
+
+  return (
+    <div className="select-none" style={{ width: '100%' }}>
+      <h1 className="page-title text-center">ROUTINE</h1>
+      <div className="flex flex-row">
+        <div className="filler flex-grow" />
+        <div className="flex-grow-0 workout-list w-screen max-w-xl">
+          {Object.entries(workouts).map(([name, p]) => (
+            <div key={name} className="workout-elem-container workout-elem-base">
+              <Workout name={name} goal={p.goal} progress={p.done} updateWorkout={updateWorkout} />
+            </div>
+          ))}
+        </div>
+        <div className="filler flex-grow" />
+      </div>
+    </div>
+  );
 
 }
 
-function Workout(props) {
-  const [counter, setCounter] = useState(0);
+function Workout({ name, goal, progress, updateWorkout }) {
+  const [counter, setCounter] = useState(progress);
 
   const increaseCounter = () => {
-    // setCounter(Math.min(counter + 1, props.goal));
-    setCounter(counter + 1);
+    const newCounter = Math.min(counter + 1, goal)
+    setCounter(newCounter);
+    updateWorkout(name, newCounter);
   }
 
   return (
@@ -69,12 +180,12 @@ function Workout(props) {
       <div className='workout-elem-background workout-elem-base flex justify-center inline-block' />
       <Spring native
         from={{
-          inset: "inset(0 " + Math.round(100 - ((counter - 1) * 100 / props.goal)) + "% 0 0)",
-          color: counter - 1 < props.goal ? "rgb(57, 119, 160)" : "rgb(149, 241, 187)"
+          inset: "inset(0 " + Math.round(100 - ((counter - 1) * 100 / goal)) + "% 0 0)",
+          color: counter - 1 < goal ? "rgb(57, 119, 160)" : "rgb(149, 241, 187)"
         }}
         to={{
-          inset: "inset(0 " + Math.round(100 - (counter * 100 / props.goal)) + "% 0 0)",
-          color: counter < props.goal ? "rgb(57, 119, 160)" : "rgb(149, 241, 187)"
+          inset: "inset(0 " + Math.round(100 - (counter * 100 / goal)) + "% 0 0)",
+          color: counter < goal ? "rgb(57, 119, 160)" : "rgb(149, 241, 187)"
         }}
       >
         {({ inset, color }) => {
@@ -88,20 +199,11 @@ function Workout(props) {
       </Spring>
       <div className='workout-text workout-elem-base flex justify-center inline-block'>
         <p className="inline-block align-bottom mb-auto mt-auto font-semibold">
-          {props.name.toUpperCase()}: {Math.min(counter, props.goal)}/{props.goal}
+          {name.toUpperCase()}: {Math.min(counter, goal)}/{goal}
         </p>
       </div>
     </div>
   )
-}
-
-
-function App() {
-  return (
-    <div className="flex justify-center">
-      <Routine />
-    </div>
-  );
 }
 
 export default App;

@@ -39,3 +39,14 @@
   position: relative;
   padding-right: 10px;
 }
+
+.single-day-status {
+  height: 63px;
+  width: 63px;
+  font-size: 16px;
+  background-color: lightgray;
+}
+
+.one-week-history {
+  /* display: inline-block; */
+}
