@@ -30,9 +30,16 @@
 }
 
 .page-title {
-  font-size:xx-large;
   letter-spacing: 5px;
   font-weight: 200;
+}
+
+h1.page-title {
+  font-size:xx-large;
+}
+
+h2.page-title {
+  font-size:x-large;
 }
 
 .workout-list {

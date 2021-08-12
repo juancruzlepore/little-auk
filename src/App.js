@@ -6,6 +6,7 @@ import { Routine as RoutineClass, ScheduleType, WeeklySchedule } from './service
 import 'react-circular-progressbar/dist/styles.css';
 import { History } from './History'
 import { DateUtils, WeekDay } from './DateUtils'
+import { BsArrowLeftShort, BsArrowRightShort } from 'react-icons/bs';
 
 const testRoutines = [
   {
@@ -71,7 +72,6 @@ function App() {
       {testRoutines.map(routine =>
         <Routine key={routine.name} routine={routine} />
       )}
-
     </div>
   );
 }
@@ -103,20 +103,26 @@ function Routine({ routine }) {
     const goal = selectedRoutineDay.workouts.find(e => e.name === name).goal
     const workoutsName = selectedRoutineDay.name
     const newEntry = { name: name, goal: goal, done: done }
-    if (curProgress) {
-      const index = curProgress.findIndex(e => e.name === name)
+    const updateProgress = (progress) => {
+      const index = progress.findIndex(e => e.name === name)
       if (index !== -1) {
-        curProgress[index] = newEntry
+        progress[index] = newEntry
       } else {
-        curProgress.push(newEntry)
+        progress.push(newEntry)
       }
+      return progress
+    }
+    if (curProgress) {
+      const newProgress = updateProgress(curProgress)
       const historyIndex = history.findIndex(e => e.workoutsName === workoutsName && e.day === curWeekDay)
-      history[historyIndex].workouts = curProgress
+      history[historyIndex].workouts = newProgress
     } else {
+      const emptyProgress = selectedRoutineDay.workouts.map(e => ({ ...e, done: 0 }))
+      const newProgress = updateProgress(emptyProgress)
       history.push({
         day: curWeekDay,
         workoutsName: workoutsName,
-        workouts: [newEntry],
+        workouts: newProgress,
       })
     }
     setHistory([...history])
@@ -124,7 +130,11 @@ function Routine({ routine }) {
 
   return (
     <div>
-      <RoutineDay progress={progress} updateHistory={updateHistory}></RoutineDay>
+      <div className="select-none" style={{ width: '100%' }}>
+        <h1 className="page-title text-center">{routine.name.toUpperCase()}</h1>
+        <RoutineDaySelector name={selectedRoutineDay.name}/>
+        <RoutineDay progress={progress} updateHistory={updateHistory}></RoutineDay>
+      </div>
       <History days={
         Object.values(history).map(d => ({
           day: d.day,
@@ -133,6 +143,17 @@ function Routine({ routine }) {
           done: Object.values(d.workouts).map(w => w.done).reduce((accu, cur) => accu + cur)
         }))
       } />
+    </div>
+  )
+}
+
+function RoutineDaySelector({name}) {
+  
+  return (
+    <div>
+      <BsArrowLeftShort className="fill-current text-green-600"/>
+      <h2 className="page-title text-center">{name.toUpperCase()}</h2>
+      <BsArrowRightShort/>
     </div>
   )
 }
@@ -148,19 +169,17 @@ function RoutineDay({ progress, updateHistory }) {
   }
 
   return (
-    <div className="select-none" style={{ width: '100%' }}>
-      <h1 className="page-title text-center">ROUTINE</h1>
-      <div className="flex flex-row">
-        <div className="filler flex-grow" />
-        <div className="flex-grow-0 workout-list w-screen max-w-xl">
-          {Object.entries(workouts).map(([name, p]) => (
-            <div key={name} className="workout-elem-container workout-elem-base">
-              <Workout name={name} goal={p.goal} progress={p.done} updateWorkout={updateWorkout} />
-            </div>
-          ))}
-        </div>
-        <div className="filler flex-grow" />
+
+    <div className="flex flex-row">
+      <div className="filler flex-grow" />
+      <div className="flex-grow-0 workout-list w-screen max-w-xl">
+        {Object.entries(workouts).map(([name, p]) => (
+          <div key={name} className="workout-elem-container workout-elem-base">
+            <Workout name={name} goal={p.goal} progress={p.done} updateWorkout={updateWorkout} />
+          </div>
+        ))}
       </div>
+      <div className="filler flex-grow" />
     </div>
   );
 
